@@ -352,7 +352,7 @@ export default function App() {
       console.error(err);
       const errorMessage = err.message || String(err) || "";
       if (errorMessage.includes("API_QUOTA_EXCEEDED") || errorMessage.includes("429")) {
-        setError("You have exceeded your API quota limit. The free preview tier limits total daily usage. Please try a shorter text or check back later. You can configure your own key in the AI Studio settings.");
+        setError("You have exceeded your API quota limit. The free preview tier limits total daily usage. Please try a shorter text or check back later.");
       } else if (errorMessage.includes("non-audio response")) {
         setError("The model refused to generate audio for this text. It might contain unsupported content, be too short, or trigger safety filters.");
       } else {
@@ -372,18 +372,6 @@ export default function App() {
             SONIQ.AI
           </div>
           <div className="flex gap-3 items-center">
-            <button 
-              onClick={async () => {
-                if (window.aistudio?.openSelectKey) {
-                  try { await window.aistudio.openSelectKey(); } catch (e) { console.error(e); }
-                }
-              }}
-              className="text-[12px] font-medium text-[#6b7280] hover:text-[#1f2937] transition-colors border border-gray-200 rounded px-2.5 py-1.5 flex items-center gap-1.5 bg-white shadow-sm"
-              title="Configure custom API Key for higher limits"
-            >
-              <Key className="w-3.5 h-3.5" />
-              API Key
-            </button>
             <span className="text-[13px] font-medium text-[#6b7280] hidden sm:inline">Text to Speech</span>
             <div className="w-8 h-8 bg-[#ddd] rounded-full flex items-center justify-center">
               <Volume2 className="w-4 h-4 text-gray-500" />
@@ -482,24 +470,6 @@ export default function App() {
           {error && (
             <div className="col-span-12 p-4 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div>{error}</div>
-              {error.toLowerCase().includes('quota') && (
-                <button
-                  onClick={async () => {
-                    if (window.aistudio?.openSelectKey) {
-                      try {
-                        await window.aistudio.openSelectKey();
-                        setError(null);
-                      } catch (e) {
-                         console.error(e);
-                      }
-                    }
-                  }}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 whitespace-nowrap transition-colors font-medium flex items-center gap-2 text-sm"
-                >
-                  <Key className="w-4 h-4" />
-                  Configure API Key
-                </button>
-              )}
             </div>
           )}
 
