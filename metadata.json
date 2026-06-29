@@ -1,0 +1,6 @@
+{
+  "name": "Text to Speech MP3 Generator",
+  "description": "Convert text and documents into high-quality MP3 audio using Gemini's TTS capabilities.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
