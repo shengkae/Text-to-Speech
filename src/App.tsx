@@ -17,7 +17,13 @@ declare global {
   }
 }
 
-const getAi = () => new GoogleGenAI({ apiKey: process.env.API_KEY || process.env.GEMINI_API_KEY });
+const getAi = (customKey?: string) => {
+  const key = customKey || process.env.API_KEY || process.env.GEMINI_API_KEY;
+  if (!key) {
+    throw new Error("No API key provided. Please enter your Gemini API key.");
+  }
+  return new GoogleGenAI({ apiKey: key });
+};
 
 const VOICES = [
   { id: 'Kore', desc: 'Professional & Calm' },
@@ -40,6 +46,8 @@ export default function App() {
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [audioData, setAudioData] = useState<string | string[] | null>(null);
   const [isConvertingMp3, setIsConvertingMp3] = useState(false);
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
+  const [showApiInput, setShowApiInput] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sampleAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -94,6 +102,12 @@ export default function App() {
     }
   };
 
+  const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setApiKey(val);
+    localStorage.setItem('gemini_api_key', val);
+  };
+
   const stopAudio = () => {
     if (mainAudioRef.current) {
       mainAudioRef.current.pause();
@@ -116,7 +130,7 @@ export default function App() {
     setError(null);
     
     try {
-      const ai = getAi();
+      const ai = getAi(apiKey);
       // Take up to the first 150 characters for preview, ensuring we don't cut off in the middle of a word if possible
       let previewText = text;
       if (text.length > 150) {
@@ -178,7 +192,7 @@ export default function App() {
 
     setGeneratingSample(voiceId);
     try {
-      const ai = getAi();
+      const ai = getAi(apiKey);
       const response = await ai.models.generateContent({
         model: "gemini-3.1-flash-tts-preview",
         contents: [{ parts: [{ text: `Hi, I am ${voiceId}. This is what my voice sounds like.` }] }],
@@ -301,7 +315,7 @@ export default function App() {
 
         while (retries > 0 && !success) {
           try {
-            const ai = getAi();
+            const ai = getAi(apiKey);
             const response = await ai.models.generateContent({
               model: "gemini-3.1-flash-tts-preview",
               contents: [{ parts: [{ text: chunk }] }],
@@ -371,7 +385,30 @@ export default function App() {
           <div className="font-[800] text-2xl tracking-tight text-[#6366f1] uppercase">
             SONIQ.AI
           </div>
-          <div className="flex gap-3 items-center">
+          <div className="flex gap-3 items-center relative">
+            <button
+              onClick={() => setShowApiInput(!showApiInput)}
+              className="text-[12px] font-medium text-[#6b7280] hover:text-[#1f2937] transition-colors border border-gray-200 rounded px-2.5 py-1.5 flex items-center gap-1.5 bg-white shadow-sm"
+              title="Configure API Key"
+            >
+              <Key className="w-3.5 h-3.5" />
+              API Key
+            </button>
+            {showApiInput && (
+              <div className="absolute top-full right-0 mt-2 p-3 bg-white border border-gray-200 rounded-lg shadow-lg w-64 z-50">
+                <label className="block text-xs font-semibold text-gray-700 mb-2">Gemini API Key</label>
+                <input
+                  type="password"
+                  value={apiKey}
+                  onChange={handleApiKeyChange}
+                  placeholder="AIza..."
+                  className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm outline-none focus:border-[#6366f1]"
+                />
+                <div className="text-[10px] text-gray-500 mt-2 leading-tight">
+                  Your key is stored locally in your browser. Get one from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-indigo-500 hover:underline">Google AI Studio</a>.
+                </div>
+              </div>
+            )}
             <span className="text-[13px] font-medium text-[#6b7280] hidden sm:inline">Text to Speech</span>
             <div className="w-8 h-8 bg-[#ddd] rounded-full flex items-center justify-center">
               <Volume2 className="w-4 h-4 text-gray-500" />
